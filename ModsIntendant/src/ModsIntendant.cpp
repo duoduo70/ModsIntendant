@@ -371,7 +371,7 @@ void comm_mods_checkforupdates_windows_old() {
 	directory_iterator dirlist(Mem::dirname / "modparse.temp" / "curseforge-json");
 	vector<path> liststr;
 	vector<string> sucmod;
-	vector<string> urllist;
+	map<string,string> urllist;
 	for (auto& it : dirlist) {
 		ifstream fObjJSON((Mem::dirname / "modparse.temp" / "curseforge-json" / it.path().filename()).string());
 		json objjson;
@@ -384,7 +384,7 @@ void comm_mods_checkforupdates_windows_old() {
 				url.erase(filetodownload, string("files").size());
 				url.insert(filetodownload + 1, "/download");
 				url.append("/file");
-				urllist.push_back(url);
+				urllist.insert(map<string, string>::value_type(url, fileobj["name"]));
 				put_ex(path(it).stem().string() + (string)" NewUrl: " + EFFECT_LIGHT_BLUE + url + EFFECT_NONE + (string)" In " + fileobj["uploaded_at"].as_string());
 				sucmod.push_back(path(it).stem().string());
 				goto LoopsOfNewFileUrlFindEnd;
@@ -408,8 +408,8 @@ void comm_mods_checkforupdates_windows_old() {
 	if (t_in != "n") {
 		for (auto& url : urllist) {
 			wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-			if (URLDownloadToFileW(nullptr, converter.from_bytes(url).c_str(), (Mem::dirname / "mods").wstring().c_str(), 0, nullptr) == !S_OK) put_ex(EFFECT_RED + string("Fail: ") + url + EFFECT_NONE);
-			else put_ex("DownloadMODOK:" + url);
+			if (URLDownloadToFileW(nullptr, converter.from_bytes(url.first).c_str(), (Mem::dirname / "mods" / url.second).wstring().c_str(), 0, nullptr) == !S_OK) put_ex(EFFECT_RED + string("Fail: ") + url.second + EFFECT_NONE);
+			else put_ex("DownloadMODOK:" + url.second);
 		}
 	}
 	OK;
